@@ -11,11 +11,14 @@
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.17.0",
     "@uiw/react-textarea-code-editor": "^2.0.3",
+    "ag-grid-community": "^28.2.0",
+    "ag-grid-react": "^28.2.0",
     "framer-motion": "^7.6.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
-    "react-icons": "^4.6.0"
+    "react-icons": "^4.6.0",
+    "react-toastify": "^9.0.8"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^4.0.0",
