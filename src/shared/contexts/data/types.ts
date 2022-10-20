@@ -11,6 +11,7 @@ export type DataContextProps = {
   selectedFile: RemoteFile | null;
   codeData: string;
   resultTable: Table | null;
+  resultError: string;
   setCodeData: (codeData: string) => void;
   runQuery: () => void;
   addRemoteFile: (file: RemoteFile) => void;

@@ -23,6 +23,7 @@ export function DataProvider({ children }: GlobalComponentProps) {
   const [codeData, setCodeData] = useState("");
 
   const [resultTable, setResultTable] = useState<Table | null>(null);
+  const [resultError, setResultError] = useState("");
 
   const db = useDuckDB();
 
@@ -46,12 +47,12 @@ export function DataProvider({ children }: GlobalComponentProps) {
     }
 
     if (db) {
-      await db.query(`DROP TABLE IF EXISTS sample_table;`);
+      await db.query(`DROP TABLE IF EXISTS ${file.name};`);
       await db.query(
-        `CREATE TABLE sample_table AS SELECT * FROM "${file.url}";`
+        `CREATE TABLE ${file.name} AS SELECT * FROM "${file.url}";`
       );
 
-      const table = await db.query(`SELECT * FROM sample_table;`);
+      const table = await db.query(`SELECT * FROM ${file.name};`);
 
       toast.success(`Loaded table ${file.name}`);
       setResultTable(table);
@@ -64,6 +65,8 @@ export function DataProvider({ children }: GlobalComponentProps) {
   }
 
   async function runQuery() {
+    setResultError("");
+
     if (selectedFile && codeData && db) {
       setIsRunning(true);
 
@@ -72,6 +75,7 @@ export function DataProvider({ children }: GlobalComponentProps) {
 
         setResultTable(data);
       } catch (e) {
+        setResultError((e as Error).message);
         toast.error("Error when running query. Please check your query.");
       }
 
@@ -83,6 +87,7 @@ export function DataProvider({ children }: GlobalComponentProps) {
     <DataContext.Provider
       value={{
         isRunning,
+        resultError,
         remoteFiles,
         selectedFile,
         codeData,

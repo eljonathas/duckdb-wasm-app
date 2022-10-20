@@ -11,41 +11,44 @@ import { UploadTableModalProps } from "./types";
 import { generateRandomId } from "@/shared/utils/generators";
 
 export function UploadTableModal({ isOpen, onClose }: UploadTableModalProps) {
-  const [uploadType, setUploadType] = useState("file");
+  const [uploadType, setUploadType] = useState("url");
   const [files, setFiles] = useState<File[]>([]);
+
   const [remoteFile, setRemoteFile] = useState("");
+  const [remoteFileName, setRemoteFileName] = useState("");
 
   const { addRemoteFile } = useData();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    if (!remoteFileName) return toast.error("Please enter a name for the file");
+
     if (uploadType === "url") {
       if (!remoteFile) return toast.error("Please enter a valid URL");
 
       const { ok } = await fetch(remoteFile);
-      // get file name from url
-      const name = remoteFile.split("/").pop() || generateRandomId();
 
       if (!ok) return toast.error("The URL is not valid");
 
       addRemoteFile({
         id: generateRandomId(),
-        name: name,
+        name: remoteFileName,
         url: remoteFile,
       });
     } else {
       if (!files.length) return toast.error("Please select a file");
 
       const url = URL.createObjectURL(files[0]);
-      const name = files[0].name;
 
       addRemoteFile({
         id: generateRandomId(),
-        name: name,
-        url: url,
+        name: remoteFileName,
+        url,
       });
     }
+
+    onClose?.();
   }
 
   return (
@@ -54,6 +57,19 @@ export function UploadTableModal({ isOpen, onClose }: UploadTableModalProps) {
         <Modal title="Add a new table" onClose={onClose}>
           <form onSubmit={onSubmit}>
             <div className="flex flex-col">
+              <div className="flex flex-col space-y-2 mb-4">
+                <label htmlFor="database-name" className="text-sm">
+                  Table name
+                </label>
+                <input
+                  id="database-name"
+                  className="border-2 border-gray-700 rounded-xl px-4 py-3 bg-gray-900 focus:outline-none focus:border-blue-500 placeholder:text-gray-600 transition disabled:bg-gray-700"
+                  type="text"
+                  placeholder="database"
+                  value={remoteFileName}
+                  onChange={e => setRemoteFileName(e.target.value)}
+                />
+              </div>
               <div className="flex flex-col space-y-2 mb-4">
                 <div className="flex items-center space-x-2">
                   <input
@@ -73,6 +89,7 @@ export function UploadTableModal({ isOpen, onClose }: UploadTableModalProps) {
                   className="border-2 border-gray-700 rounded-xl px-4 py-3 bg-gray-900 focus:outline-none focus:border-blue-500 placeholder:text-gray-600 transition disabled:bg-gray-700"
                   type="text"
                   placeholder="https://storage.com/table.parquet"
+                  value={remoteFile}
                   onChange={e => setRemoteFile(e.target.value)}
                 />
               </div>

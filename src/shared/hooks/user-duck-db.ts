@@ -16,16 +16,14 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
     mainWorker: eh_worker,
   },
 };
+
 export function useDuckDB() {
   const [db, setDB] = useState<duckdb.AsyncDuckDBConnection>();
 
   useEffect(() => {
     async function init() {
       try {
-        // Select a bundle based on browser checks
         const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
-
-        // Instantiate the asynchronus version of DuckDB-wasm
         const worker = new Worker(String(bundle.mainWorker));
         const logger = new duckdb.ConsoleLogger();
         const db = new duckdb.AsyncDuckDB(logger, worker);

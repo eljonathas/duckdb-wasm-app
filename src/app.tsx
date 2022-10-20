@@ -21,6 +21,7 @@ export function App() {
     runQuery,
     resultTable,
     isRunning,
+    resultError,
   } = useData();
 
   const tableData = useMemo(() => resultTable?.toArray(), [resultTable]);
@@ -82,14 +83,6 @@ export function App() {
               <h2 className="font-semibold text-gray-500">
                 Insert your query (SQL)
               </h2>
-              {/* Create alert */}
-              <div
-                className="p-4 mb-4 text-sm text-yellow-700 bg-yellow-200 rounded-lg dark:bg-blue-200 dark:text-blue-800"
-                role="alert"
-              >
-                Use <span className="font-semibold">sample_table</span> as table
-                name in your query, it will be replaced with the selected table.
-              </div>
               <CodeEditor
                 className="rounded-xl h-96 bg-gray-800 text-white"
                 language="sql"
@@ -100,6 +93,14 @@ export function App() {
                   fontFamily: "monospace",
                 }}
               />
+              {resultError && (
+                <div
+                  className="p-4 mb-4 text-sm text-red-700 bg-red-200 rounded-lg"
+                  role="alert"
+                >
+                  {resultError}
+                </div>
+              )}
               <button
                 className="flex items-center justify-center bg-blue-500 rounded-xl px-12 py-4 text-white font-semibold gap-2 ml-auto hover:brightness-110 active:brightness-90 transition min-w-[12rem]"
                 onClick={runQuery}
@@ -138,7 +139,16 @@ export function App() {
               <div className="flex flex-col">
                 {tableData ? (
                   <div className="ag-theme-alpine-dark w-full h-[40em]">
-                    <AgGridReact columnDefs={columnDefs} rowData={rowData} />
+                    <AgGridReact
+                      columnDefs={columnDefs}
+                      rowData={rowData}
+                      pagination
+                      defaultColDef={{
+                        sortable: true,
+                        filter: true,
+                        resizable: true,
+                      }}
+                    />
                   </div>
                 ) : (
                   <p className="text-gray-500">No data loaded</p>
