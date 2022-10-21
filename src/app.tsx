@@ -14,8 +14,8 @@ export function App() {
   const [showModal, setShowModal] = useState(false);
   const {
     remoteFiles,
-    changeSelectedFile,
-    selectedFile,
+    selectedFiles,
+    toggleRemoteFile,
     setCodeData,
     codeData,
     runQuery,
@@ -57,9 +57,9 @@ export function App() {
               <Card
                 key={file.url}
                 onClick={() => {
-                  changeSelectedFile(file.id);
+                  toggleRemoteFile(file.id);
                 }}
-                isSelected={selectedFile?.id === file.id}
+                isSelected={!!selectedFiles.find(f => f.id === file.id)}
               >
                 <h2>{file.name}</h2>
               </Card>

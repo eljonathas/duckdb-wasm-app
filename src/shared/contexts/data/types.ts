@@ -8,7 +8,7 @@ export type RemoteFile = {
 
 export type DataContextProps = {
   remoteFiles: RemoteFile[];
-  selectedFile: RemoteFile | null;
+  selectedFiles: RemoteFile[];
   codeData: string;
   resultTable: Table | null;
   resultError: string;
@@ -16,6 +16,6 @@ export type DataContextProps = {
   runQuery: () => void;
   addRemoteFile: (file: RemoteFile) => void;
   removeRemoteFile: (id: string) => void;
-  changeSelectedFile: (id: string) => void;
+  toggleRemoteFile: (id: string) => void;
   isRunning: boolean;
 };

@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { toast } from "react-toastify";
 import { Table } from "apache-arrow";
 
@@ -7,17 +7,13 @@ import { useDuckDB } from "@/shared/hooks/user-duck-db";
 
 import { LoadingIcon } from "@/shared/assets/icons/loading";
 
-import { RemoteFiles } from "./constants";
-
 import { DataContextProps, RemoteFile } from "./types";
 
 export const DataContext = createContext({} as unknown as DataContextProps);
 
 export function DataProvider({ children }: GlobalComponentProps) {
-  const [remoteFiles, setRemoteFiles] = useState<RemoteFile[]>(() => [
-    ...RemoteFiles,
-  ]);
-  const [selectedFile, setSelectedFile] = useState<RemoteFile | null>(null);
+  const [remoteFiles, setRemoteFiles] = useState<RemoteFile[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<RemoteFile[]>([]);
 
   const [isRunning, setIsRunning] = useState(false);
   const [codeData, setCodeData] = useState("");
@@ -26,6 +22,26 @@ export function DataProvider({ children }: GlobalComponentProps) {
   const [resultError, setResultError] = useState("");
 
   const db = useDuckDB();
+
+  async function toggleRemoteFile(id: string) {
+    const file = remoteFiles.find(file => file.id === id);
+
+    if (file) {
+      if (selectedFiles.includes(file)) {
+        await db?.query(`DROP TABLE IF EXISTS ${file.name};`);
+        setSelectedFiles(prev => prev.filter(f => f !== file));
+        toast.success(`Table ${file.name} dropped`);
+      } else {
+        await db?.query(
+          `CREATE TABLE ${file.name} AS SELECT * FROM "${file.url}";`
+        );
+        setSelectedFiles(prev => [...prev, file]);
+        toast.success(`Loaded table ${file.name}`);
+      }
+    } else {
+      toast.error("File not found");
+    }
+  }
 
   function addRemoteFile(file: RemoteFile) {
     if (remoteFiles.find(f => f.url === file.url)) {
@@ -39,35 +55,10 @@ export function DataProvider({ children }: GlobalComponentProps) {
     setRemoteFiles(remoteFiles.filter(f => f.id !== id));
   }
 
-  async function changeSelectedFile(id: string) {
-    const file = remoteFiles.find(f => f.id === id);
-
-    if (!file) {
-      return;
-    }
-
-    if (db) {
-      await db.query(`DROP TABLE IF EXISTS ${file.name};`);
-      await db.query(
-        `CREATE TABLE ${file.name} AS SELECT * FROM "${file.url}";`
-      );
-
-      const table = await db.query(`SELECT * FROM ${file.name};`);
-
-      toast.success(`Loaded table ${file.name}`);
-      setResultTable(table);
-      setSelectedFile(file);
-    } else {
-      toast.error(
-        "Error when loading table. Database is not initialized, please refresh the page."
-      );
-    }
-  }
-
   async function runQuery() {
     setResultError("");
 
-    if (selectedFile && codeData && db) {
+    if (codeData && db) {
       setIsRunning(true);
 
       try {
@@ -89,14 +80,14 @@ export function DataProvider({ children }: GlobalComponentProps) {
         isRunning,
         resultError,
         remoteFiles,
-        selectedFile,
+        selectedFiles,
         codeData,
         resultTable,
         runQuery,
         setCodeData,
         addRemoteFile,
         removeRemoteFile,
-        changeSelectedFile,
+        toggleRemoteFile,
       }}
     >
       {db ? (
